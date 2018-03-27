@@ -46,7 +46,7 @@ function findPeaks(pcmdata, samplerate){
   console.log(pcmdata);
   let interval = 0.05 * 1000;
   let index = 0;
-  let step = Math.round( samplerate * (interval/1000) );
+  let step = Math.round( samplerate / 1000 * (interval/1000) );
   // let step = 1;
   let max = 0;
   let prevmax = 0;
@@ -114,14 +114,16 @@ function mean(array) {
     total += array[i];
   }
 
-  return total/array.length;
+  return Math.abs(total/array.length);
 }
 
 function median(array) {
   array.sort((a,b) => a - b);
   const half = Math.floor(array.length / 2);
 
-  return array.length % 2 ? array[half] : (array[half - 1] + array[half] / 2);
+  const result = array.length % 2 ? array[half] : (array[half - 1] + array[half] / 2);
+
+  return Math.abs(result);
 }
 
 function findPeaksAtThreshold(pcmData, threshold) {
@@ -164,6 +166,7 @@ class App extends Component {
 
     let max = 0;
     let prevMax = 0;
+    let nextMax = 0;
     let prevDiffThreshold = 0.3;
     let peaks = [];
 
@@ -173,11 +176,20 @@ class App extends Component {
       // console.log(i);
 
       for (let j = i; j < i + step; j++) {
-        max = pcmdata[j] > max ? pcmdata[j].toFixed(1) : max;
+        const datum = Math.pow(pcmdata[j], 2);
+        // const datum = pcmdata[j];
+        max = datum > max ? datum.toFixed(1) : max;
         // console.log('**', max);
       }
-      console.log(max-prevMax >= thresholds[i], max, prevMax, thresholds[i]);
-      if (max-prevMax >= thresholds[i] && max-prevMax !== 0) {
+
+      for (let j = i + step; j < i + step * 2; j++) {
+        const datum = Math.pow(pcmdata[j], 2);
+        // const datum = pcmdata[j];
+        nextMax = datum > nextMax ? datum.toFixed(1) : nextMax;
+      }
+
+      console.log(max-prevMax >= thresholds[i], max, prevMax, nextMax, thresholds[i]);
+      if (max-prevMax >= thresholds[i] && max >= nextMax && max-prevMax !== 0) {
         peaks[i] = true;
       }
 
