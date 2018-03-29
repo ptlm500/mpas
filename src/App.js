@@ -10,85 +10,67 @@ let soundFile = '/120test.wav';
 
 let context;
 let bufferLoader;
+let input;
+let analyser;
+let scriptProcessor;
 
 function initAudio() {
   try {
     window.AudioContext = window.AudioContext || window.webkitAudioContext;
     context = new AudioContext();
+
   } catch (e) {
-    alert('Something went wrong');
+    alert('[initAudio] Error initialising audio: ', e);
   }
 }
 
-// function decodeSoundFile(soundFile) {
-//   let reader = new FileReader();
-//   let pcmdata;
-//   reader.onload = (e) => {
-//     console.info('[File Loaded]');
-//     context.decodeAudioData(reader.result, (audioBuffer) => {
-//       console.log(audioBuffer);
-//       pcmdata = (audioBuffer.getChannelData(0));
-//       let samplerate = audioBuffer.sampleRate;
-//       findPeaks(pcmdata, samplerate);
-//       playSound(audioBuffer);
-//       return pcmdata;
-//     });
-//   }
+function initStream() {
+  navigator.mediaDevices.getUserMedia({
+    audio: true,
+  }).then(stream => {
+    input = context.createMediaStreamSource(stream);
+    analyser = context.createAnalyser();
+    scriptProcessor = context.createScriptProcessor();
 
-//   reader.onprogress = (e) => {
-//     console.info('[Loading File] ' + (e.loaded / e.total * 100) + '%');
-//   }
+    analyser.smoothingTimeConstant = 0.3;
+    analyser.fftSize = 2048;
 
-//   reader.readAsArrayBuffer(soundFile);
-// }
+    input.connect(analyser);
+    analyser.connect(scriptProcessor);
+    scriptProcessor.connect(context.destination);
 
-function findPeaks(pcmdata, samplerate){
-  console.log(pcmdata);
-  let interval = 0.05 * 1000;
-  let index = 0;
-  let step = Math.round( samplerate / 1000 * (interval/1000) );
-  // let step = 1;
-  let max = 0;
-  let prevmax = 0;
-  let prevdiffthreshold = 0.3;
-  let peaks = [];
+    scriptProcessor.onaudioprocess = processInput;
+  }, e => {
+    console.error('[initStream] Error initialising audio stream: ', e);
+  })
+}
 
-  let thresholds = getThresholdData(pcmdata, samplerate, step);
+let prevLiveMax;
+let liveMax;
+let nextLiveMax = 0;
 
-  //loop through song in time with sample rate
-  let samplesound = setInterval(() => {
-    if (index >= pcmdata.length) {
-      clearInterval(samplesound);
-      console.log("finished sampling sound")
-      return;
+const processInput = audioProcessingEvent => {
+  const tempArray = new Uint8Array(analyser.frequencyBinCount);
+
+  analyser.getByteFrequencyData(tempArray);
+
+  for (let i = 0; i < tempArray.length; i++) {
+    const datum = Math.pow(tempArray[i], 2);
+    // console.log(datum);
+    nextLiveMax = datum > nextLiveMax ? datum.toFixed(1) : nextLiveMax;
+  }
+  // console.log(nextLiveMax, liveMax, prevLiveMax);
+
+  if (liveMax && prevLiveMax) {
+    let threshold = median(tempArray);
+    if (liveMax-prevLiveMax >= threshold && liveMax >= nextLiveMax && liveMax-prevLiveMax !== 0) {
+      console.log('peak', liveMax, prevLiveMax, nextLiveMax);
     }
+  }
 
-    let thresholdIndex = 0;
-
-    for(let i = index; i < index + step ; i++){
-      max = pcmdata[i] > max ? pcmdata[i].toFixed(1) : max;
-      // max = median([pcmdata[i-2], pcmdata[i-1], pcmdata[i], pcmdata[i+1], pcmdata[i+2]]);
-      // max = Math.pow(max, 2);
-    }
-
-    // Spot a significant increase? Potential peak
-    let bars = getbars(max) ;
-    if (max-prevmax >= thresholds[thresholdIndex] && max-prevmax > 0){
-      bars = bars + " == peak == ";
-      peaks.push(index);
-    }
-
-    // Print out mini equalizer on commandline
-    console.log(bars, max, index);
-    // console.log(max, prevmax, thresholds[thresholdIndex]);
-    prevmax = max;
-    max = 0;
-    index += step;
-    thresholdIndex++;
-  }, interval, pcmdata);
-
-  console.log(peaks.length);
-  return peaks;
+  prevLiveMax = liveMax;
+  liveMax = nextLiveMax;
+  nextLiveMax = 0;
 }
 
 function getThresholdData(pcmdata, samplerate, step) {
@@ -235,6 +217,10 @@ class App extends Component {
     console.error('[File Load] ' + error.code + ': ' + error.message);
   }
 
+  onLiveButtonClick() {
+    initStream();
+  }
+
   drawWaveform() {
     if (this.state.pcmdata) {
       return (
@@ -271,12 +257,17 @@ class App extends Component {
           minFileSize={0}
           clickable
         >
-          Drop An Audio File here!
+          <span className="dropzone-label">
+            Drop an audio file here for analysis
+          </span>
         </Files>
         <svg className="waveform-container">
           {this.drawWaveform()}
           {this.drawPeaks()}
         </svg>
+        <div className="live-button" onClick={e => this.onLiveButtonClick()}>
+          Use live input
+        </div>
       </div>
     );
   }

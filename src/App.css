@@ -30,4 +30,28 @@
 @keyframes App-logo-spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
+
+}
+
+.files-dropzone {
+  border: 1px solid black;
+  margin-left: 10%;
+  margin-right: 10%;
+
+  height: 50px;
+  line-height: 50px;
+  text-align: center;
+}
+
+.dropzone-label {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.live-button {
+  text-align: center;
+  margin: auto;
+  cursor: pointer;
+  width: 200px;
+  border: 1px solid black;
 }
