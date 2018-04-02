@@ -273,7 +273,7 @@ class App extends Component {
 
   onFilesChange(files) {
     console.log(files);
-    this.decodeSoundFile(files[0]);
+    this.decodeSoundFile(files[files.length - 1]);
   }
 
   onFilesError(error, file) {
@@ -316,7 +316,6 @@ class App extends Component {
           onError={(e, file) => this.onFilesError(e, file)}
           accepts={['audio/*']}
           multiple
-          maxFiles={1}
           minFileSize={0}
           clickable
         >
