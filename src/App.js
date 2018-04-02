@@ -14,6 +14,12 @@ let input;
 let analyser;
 let scriptProcessor;
 
+let prevLiveMax;
+let liveMax;
+let nextLiveMax = 0;
+
+let liveThresholdBuffer;
+
 function initAudio() {
   try {
     window.AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -44,10 +50,6 @@ function initStream() {
     console.error('[initStream] Error initialising audio stream: ', e);
   })
 }
-
-let prevLiveMax;
-let liveMax;
-let nextLiveMax = 0;
 
 const processInput = audioProcessingEvent => {
   const tempArray = new Uint8Array(analyser.frequencyBinCount);
@@ -93,7 +95,7 @@ function getThresholdData(pcmdata, samplerate, step) {
 function mean(array) {
   let total = 0;
   for (let i = 0; i < array.length; i++) {
-    total += array[i];
+    total += Math.pow(array[i], 2);
   }
 
   return Math.abs(total/array.length);
@@ -103,7 +105,7 @@ function median(array) {
   array.sort((a,b) => a - b);
   const half = Math.floor(array.length / 2);
 
-  const result = array.length % 2 ? array[half] : (array[half - 1] + array[half] / 2);
+  const result = array.length % 2 ? array[half] : (array[half - 1] + array[half]) / 2;
 
   return Math.abs(result);
 }
@@ -140,6 +142,67 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.state = {};
+  }
+
+  initStream() {
+    navigator.mediaDevices.getUserMedia({
+      audio: true,
+    }).then(stream => {
+      input = context.createMediaStreamSource(stream);
+      analyser = context.createAnalyser();
+      scriptProcessor = context.createScriptProcessor();
+
+      analyser.smoothingTimeConstant = 0.3;
+      analyser.fftSize = 4096;
+
+      input.connect(analyser);
+      analyser.connect(scriptProcessor);
+      scriptProcessor.connect(context.destination);
+
+      scriptProcessor.onaudioprocess = this.processInput;
+      console.log('***', analyser.frequencyBinCount);
+    }, e => {
+      console.error('[initStream] Error initialising audio stream: ', e);
+    })
+  }
+
+  processInput = audioProcessingEvent => {
+    const buffer = new Uint8Array(analyser.frequencyBinCount);
+
+    analyser.getByteFrequencyData(buffer);
+
+    for (let i = 0; i < buffer.length; i++) {
+      const datum = Math.pow(buffer[i], 2);
+      // console.log(datum);
+      nextLiveMax = datum > nextLiveMax ? datum.toFixed(1) : nextLiveMax;
+    }
+    // console.log(nextLiveMax, liveMax, prevLiveMax);
+
+    this.updateThresholdBuffer(buffer);
+
+    if (liveMax && prevLiveMax) {
+      let threshold = mean(liveThresholdBuffer);
+      // console.log(buffer.filter(e => e !== 0));
+      // console.log(threshold);
+      if (liveMax-prevLiveMax >= threshold && liveMax >= nextLiveMax && liveMax-prevLiveMax !== 0) {
+        console.log('peak', liveMax, prevLiveMax, nextLiveMax);
+      }
+    }
+
+    prevLiveMax = liveMax;
+    liveMax = nextLiveMax;
+    nextLiveMax = 0;
+  }
+
+  updateThresholdBuffer(buffer) {
+    if (!liveThresholdBuffer) {
+      liveThresholdBuffer = Array.from(buffer);
+    } else if (liveThresholdBuffer.length === buffer.length * 10 - 1) {
+      liveThresholdBuffer.splice(buffer.length - 1, 0);
+    }
+
+    // console.log(liveThresholdBuffer.filter(e => e !== 0));
+    liveThresholdBuffer = liveThresholdBuffer.concat(Array.from(buffer));
   }
 
   findPeaks(pcmdata, samplerate) {
@@ -218,7 +281,7 @@ class App extends Component {
   }
 
   onLiveButtonClick() {
-    initStream();
+    this.initStream();
   }
 
   drawWaveform() {
