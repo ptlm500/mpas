@@ -5,7 +5,7 @@ import './App.css';
 import { decode } from 'punycode';
 import Waveform from './Waveform';
 import PeakLines from './PeakLines';
-
+import FileBrowser from './FileBrowser';
 let soundFile = '/120test.wav';
 
 let context;
@@ -142,6 +142,7 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.state = {};
+    this.audioInitialized = false;
   }
 
   initStream() {
@@ -273,6 +274,7 @@ class App extends Component {
 
   onFilesChange(files) {
     console.log(files);
+    this.setState({files: files});
     this.decodeSoundFile(files[files.length - 1]);
   }
 
@@ -282,6 +284,14 @@ class App extends Component {
 
   onLiveButtonClick() {
     this.initStream();
+  }
+
+  onFileClick(file) {
+    if (file) {
+      this.decodeSoundFile(file);
+    } else {
+      console.error('[onFileClick]: No file supplied');
+    }
   }
 
   drawWaveform() {
@@ -307,7 +317,11 @@ class App extends Component {
   }
 
   render() {
-    initAudio();
+    if (!this.audioInitialized) {
+      initAudio();
+      this.audioInitialized = true;
+    }
+
     return (
       <div className="App">
         <Files
@@ -327,6 +341,10 @@ class App extends Component {
           {this.drawWaveform()}
           {this.drawPeaks()}
         </svg>
+        <FileBrowser
+          files={this.state.files}
+          onFileClick={file => this.onFileClick(file)}
+        />
         <div className="live-button" onClick={e => this.onLiveButtonClick()}>
           Use live input
         </div>
