@@ -5,6 +5,7 @@ import './App.css';
 import { decode } from 'punycode';
 import Waveform from './Waveform';
 import PeakLines from './PeakLines';
+import LivePeakDisplay from './LivePeakDisplay';
 import FileBrowser from './FileBrowser';
 let soundFile = '/120test.wav';
 
@@ -136,8 +137,28 @@ function playSound(buffer) {
                                              // note: on older systems, may have to use deprecated noteOn(time);
 }
 
+const livePeakHistorySize = 1000;
+
+function updateLivePeaks(peakArray, peak) {
+  const maxArraySize = livePeakHistorySize;
+  let newPeakArray = peakArray;
+
+  if (!newPeakArray)
+    newPeakArray = [];
+
+  newPeakArray.reverse();
+  if (newPeakArray.length + 1 === maxArraySize) {
+    console.log('shifting');
+    newPeakArray.shift();
+  }
+
+  newPeakArray.push(peak);
+
+  return newPeakArray.reverse();
+}
+
 const svgWidth = 1000;
-const svgHeight = 500;
+const svgHeight = 50;
 class App extends Component {
   constructor(props) {
     super(props);
@@ -187,7 +208,14 @@ class App extends Component {
       // console.log(threshold);
       if (liveMax-prevLiveMax >= threshold && liveMax >= nextLiveMax && liveMax-prevLiveMax !== 0) {
         console.log('peak', liveMax, prevLiveMax, nextLiveMax);
+        this.setState({
+          peakArray: updateLivePeaks(this.state.peakArray, true)
+        });
       }
+    } else {
+      this.setState({
+        peakArray: updateLivePeaks(this.state.peakArray, false)
+      });
     }
 
     prevLiveMax = liveMax;
@@ -306,7 +334,7 @@ class App extends Component {
     if (this.state.pcmdata && this.state.peaks) {
       return (
         <PeakLines
-          pcmdata={this.state.pcmdata}
+          dataLength={this.state.pcmdata.length}
           peaks={this.state.peaks}
           width={svgWidth}
           height={svgHeight}
@@ -315,6 +343,21 @@ class App extends Component {
       );
     }
   }
+
+  drawLivePeaks() {
+    if (this.state.peakArray) {
+      return (
+        <LivePeakDisplay
+          dataLength={livePeakHistorySize}
+          peaks={this.state.peakArray}
+          width={svgWidth}
+          height={svgHeight}
+          colour={"red"}
+        />
+      );
+    }
+  }
+
 
   render() {
     if (!this.audioInitialized) {
@@ -337,17 +380,22 @@ class App extends Component {
             Drop an audio file here for analysis
           </span>
         </Files>
-        <svg className="waveform-container">
-          {this.drawWaveform()}
-          {this.drawPeaks()}
-        </svg>
-        <FileBrowser
-          files={this.state.files}
-          onFileClick={file => this.onFileClick(file)}
-        />
+        <div className="recorded-analyser-container">
+          <svg className="waveform-container">
+            {this.drawWaveform()}
+            {this.drawPeaks()}
+          </svg>
+          <FileBrowser
+            files={this.state.files}
+            onFileClick={file => this.onFileClick(file)}
+          />
+        </div>
         <div className="live-button" onClick={e => this.onLiveButtonClick()}>
           Use live input
         </div>
+        <svg className="waveform-container">
+          {this.drawLivePeaks()}
+        </svg>
       </div>
     );
   }

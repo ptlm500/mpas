@@ -1,5 +1,6 @@
 .App {
   text-align: center;
+  font-size: 20px;
 }
 
 .App-logo {
@@ -23,6 +24,7 @@
 }
 
 .waveform-container {
+  margin-top: 50px;
   width: 1000px;
   height: 500px;
 }
@@ -48,10 +50,37 @@
   vertical-align: middle;
 }
 
+.recorded-analyser-container {
+  display: flex;
+  margin-left: 10%;
+  margin-right: 10%;
+  flex-wrap: wrap;
+}
+
 .live-button {
   text-align: center;
   margin: auto;
+  margin-top: 50px;
   cursor: pointer;
   width: 200px;
   border: 1px solid black;
+}
+
+.browser-container {
+  margin-top: 50px;
+  flex-grow: 1;
+  max-height: 500px;
+  max-width: 50%;
+  overflow-y: auto;
+}
+
+.browser-title {
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.browser-element {
+  cursor: pointer;
+  text-align: left;
+  margin-bottom: 5px;
 }

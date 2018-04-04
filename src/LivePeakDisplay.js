@@ -1,9 +1,11 @@
 import React, { Component } from 'react';
 
-class PeakLines extends Component {
+class LivePeakDisplay extends Component {
   getPeaks() {
     let peaks = [];
     const step = Math.ceil( this.props.dataLength / this.props.width);
+
+    // console.log(step, this.props.peaks);
 
     for (let i= 0; i < this.props.width; i++) {
       let peak;
@@ -17,7 +19,15 @@ class PeakLines extends Component {
         peaks.push(
           <rect key={i} x={i} y={0} width={2} height={this.props.height} fill={this.props.colour}/>
         );
+      // else
+      // peaks.push(
+      //   <rect key={i} x={i} y={0} width={2} height={this.props.height} fill={"blue"}/>
+      // );
+
+      // console.log(i, peak);
     }
+
+    return peaks;
 
     return peaks;
   }
@@ -31,4 +41,4 @@ class PeakLines extends Component {
   }
 }
 
-export default PeakLines;
+export default LivePeakDisplay;

@@ -1,13 +1,21 @@
 import React, { Component } from 'react';
 
 class FileBrowser extends Component {
+  renderTitle() {
+    if (this.props.files) {
+      return (
+        <div className="browser-title">Re-load file</div>
+      );
+    }
+  }
+
   renderFileList() {
     let fileList = [];
 
     if (this.props.files) {
       this.props.files.forEach(file => {
         fileList.push(
-          <div onClick={() => this.props.onFileClick(file)} >
+          <div className="browser-element" onClick={() => this.props.onFileClick(file)} >
             {file.name}
           </div>
         );
@@ -18,9 +26,9 @@ class FileBrowser extends Component {
   }
 
   render() {
-    console.log(this.props.files);
     return (
-      <div>
+      <div className="browser-container">
+        {this.renderTitle()}
         {this.renderFileList()}
       </div>
     );
