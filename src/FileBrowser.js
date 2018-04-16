@@ -25,11 +25,24 @@ class FileBrowser extends Component {
     return fileList;
   }
 
+  renderPlayButton() {
+    if (this.props.files)
+      return (
+        <div
+          className="play-button"
+          onClick={() => this.props.onPlayClick()}
+        >
+          Play Audio
+        </div>
+      );
+  }
+
   render() {
     return (
       <div className="browser-container">
         {this.renderTitle()}
         {this.renderFileList()}
+        {this.renderPlayButton()}
       </div>
     );
   }

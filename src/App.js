@@ -244,9 +244,9 @@ class App extends Component {
         // Perform onset detection
         let peaks = this.findPeaks(pcmdata, samplerate);
 
-        playSound(audioBuffer);
         // Store the pcm data and peaks
         this.setState({
+          audioBuffer: audioBuffer,
           pcmdata: pcmdata,
           peaks: peaks
         });
@@ -284,6 +284,11 @@ class App extends Component {
     } else {
       console.error('[onFileClick]: No file supplied');
     }
+  }
+
+  onPlayClick() {
+    if (this.state.audioBuffer)
+      playSound(this.state.audioBuffer);
   }
 
   // Draws a waveform from the stored pcm data buffer
@@ -356,6 +361,7 @@ class App extends Component {
           <FileBrowser
             files={this.state.files}
             onFileClick={file => this.onFileClick(file)}
+            onPlayClick={() => this.onPlayClick()}
           />
         </div>
         <div className="live-button" onClick={e => this.onLiveButtonClick()}>
@@ -365,7 +371,6 @@ class App extends Component {
           <svg className="waveform-container">
             {this.drawLivePeaks()}
           </svg>
-          <span>Live input history (peaks shown in red)</span>
         </div>
       </div>
     );
