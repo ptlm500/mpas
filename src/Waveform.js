@@ -8,6 +8,7 @@ class Waveform extends Component {
     );
   }
 
+  // Draws the waveform graph
   getWaveform() {
     let waveform = [];
     // Define a step size based on input data size and defined width
