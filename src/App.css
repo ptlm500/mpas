@@ -1,6 +1,7 @@
 .App {
   text-align: center;
   font-size: 20px;
+  background: #f5f7fa;
 }
 
 .App-logo {
@@ -25,7 +26,7 @@
 
 .waveform-container {
   margin-top: 50px;
-  width: 1000px;
+  min-width: 1000px;
   height: 500px;
 }
 
@@ -37,12 +38,13 @@
 
 .files-dropzone {
   border: 1px solid black;
-  margin-left: 10%;
-  margin-right: 10%;
+  margin-left: 5%;
+  margin-right: 5%;
 
   height: 50px;
   line-height: 50px;
   text-align: center;
+  cursor: pointer;
 }
 
 .dropzone-label {
@@ -52,8 +54,8 @@
 
 .recorded-analyser-container {
   display: flex;
-  margin-left: 10%;
-  margin-right: 10%;
+  margin-left: 5%;
+  margin-right: 5%;
   flex-wrap: wrap;
 }
 
@@ -70,17 +72,29 @@
   margin-top: 50px;
   flex-grow: 1;
   max-height: 500px;
-  max-width: 50%;
+  /* max-width: 50%; */
   overflow-y: auto;
 }
 
+
+
 .browser-title {
   width: 100%;
-  margin-bottom: 10px;
+  padding-bottom: 10px;
+  background: #5596e6;
+  color: #fff;
 }
 
 .browser-element {
   cursor: pointer;
   text-align: left;
-  margin-bottom: 5px;
+  padding-bottom: 5px;
+}
+
+.browser-element:nth-child(2n+1) {
+  background: #dfe3e6;
+}
+
+.browser-element:nth-child(2n) {
+  background: #fff;
 }
