@@ -215,6 +215,7 @@ class App extends Component {
         nextMax = datum > nextMax ? datum.toFixed(1) : nextMax;
       }
 
+      console.log(prevMax, max, nextMax, thresholds[i]);
       // Perform peak picking
       if (max-prevMax >= thresholds[i] && max >= nextMax && max-prevMax > 0) {
         peaks[i] = true;
@@ -223,6 +224,7 @@ class App extends Component {
       // Update values for next step
       prevMax = max;
       max = 0;
+      nextMax = 0;
     }
 
     return peaks;
