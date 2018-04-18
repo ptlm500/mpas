@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 
+// Renders an svg group containing the live peak lines
 class LivePeakDisplay extends Component {
   // Draws the peak lines
   getPeaks() {

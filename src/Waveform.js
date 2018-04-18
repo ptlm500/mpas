@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 
+// Renders a pre-recorded audio files waveform
 class Waveform extends Component {
   // Draws a rectangle at position [x,y] of width w and height h with a colour c
   getRect(key, x, y, w, h, c) {

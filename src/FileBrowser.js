@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 
+// File table component
 class FileBrowser extends Component {
   renderTitle() {
     if (this.props.files) {

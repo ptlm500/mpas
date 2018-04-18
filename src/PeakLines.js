@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 
+// Renders an svg group containing the peak lines
 class PeakLines extends Component {
   getPeaks() {
     let peaks = [];
