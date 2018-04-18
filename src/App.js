@@ -153,7 +153,7 @@ class App extends Component {
       let threshold = mean(liveThresholdBuffer);
 
       // Perform peak picking
-      if (liveMax-prevLiveMax >= threshold && mean(liveBuffer) > threshold && liveMax > nextLiveMax) {
+      if (liveMax-prevLiveMax >= threshold && liveMax >= nextLiveMax && mean(liveBuffer) > threshold) {
         this.setState({
           peakArray: updateLivePeaks(this.state.peakArray, true)
         });
